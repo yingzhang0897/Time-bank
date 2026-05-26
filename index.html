@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Bank — Your Life Balance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1f1f1f;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.15);
+    --text: #f0ede8;
+    --muted: #6b6b6b;
+    --accent: #c8f060;
+    --accent-dim: rgba(200,240,96,0.12);
+    --warn: #ff6b3d;
+    --warn-dim: rgba(255,107,61,0.1);
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+  .logo {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .header-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Balance card */
+  .balance-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-card::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(200,240,96,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .balance-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .balance-amount {
+    font-family: var(--font-mono);
+    font-size: clamp(32px, 8vw, 48px);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.02em;
+  }
+  .balance-unit {
+    font-size: 16px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-left: 4px;
+  }
+  .balance-sub {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .balance-sub span {
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  /* Stats row */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.9rem 0.75rem;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-lbl {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Warning */
+  .warn-card {
+    background: var(--warn-dim);
+    border: 1px solid rgba(255,107,61,0.25);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .warn-icon {
+    font-size: 16px;
+    color: var(--warn);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .warn-text {
+    font-size: 13px;
+    color: #ffb49a;
+    line-height: 1.55;
+  }
+
+  /* Controls card */
+  .controls-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 1.1rem;
+  }
+
+  .slider-row {
+    margin-bottom: 1rem;
+  }
+  .slider-row:last-of-type { margin-bottom: 0; }
+  .slider-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .slider-label {
+    font-size: 13px;
+    color: var(--text);
+  }
+  .slider-val {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Progress bars */
+  .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+
+  .prog-row { margin-bottom: 0.75rem; }
+  .prog-row:last-child { margin-bottom: 0; }
+  .prog-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .prog-bar {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Tip */
+  .tip {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-style: italic;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="logo">⬡ Time Bank</div>
+    <div class="header-date" id="today-date"></div>
+  </div>
+
+  <div class="balance-card">
+    <div class="balance-label">Your life balance</div>
+    <div class="balance-amount" id="life-hours">—<span class="balance-unit">hrs</span></div>
+    <div class="balance-sub">remaining · <span id="life-years">—</span> years left</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val" id="days-left">—</div>
+      <div class="stat-lbl">days left</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="pct-spent">—</div>
+      <div class="stat-lbl">life spent</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="phone-cost">—</div>
+      <div class="stat-lbl">hrs/yr on phone</div>
+    </div>
+  </div>
+
+  <div class="warn-card">
+    <div class="warn-icon">⚠</div>
+    <div class="warn-text" id="warn-text">Adjust the sliders to see your personal time warning.</div>
+  </div>
+
+  <div class="controls-card">
+    <div class="section-label">Your profile</div>
+
+    <div class="slider-row">
+      <div class="slider-top">
+        <span class="slider-label">Current age</span>
+        <span class="slider-val" id="v-age">30 yrs</span>
+      </div>
+      <input type="range" id="sl-age" min="10" max="85" value="30" step="1">
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-top">
+        <span class="slider-label">Life expectancy</span>
+        <span class="slider-val" id="v-life">80 yrs</span>
+      </div>
+      <input type="range" id="sl-life" min="50" max="100" value="80" step="1">
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-top">
+        <span class="slider-label">Phone use per day</span>
+        <span class="slider-val" id="v-phone">4 hrs</span>
+      </div>
+      <input type="range" id="sl-phone" min="0" max="12" value="4" step="0.5">
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-top">
+        <span class="slider-label">Sleep per night</span>
+        <span class="slider-val" id="v-sleep">7 hrs</span>
+      </div>
+      <input type="range" id="sl-sleep" min="4" max="12" value="7" step="0.5">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="prog-row">
+      <div class="prog-top"><span>Life spent</span><span id="prog-pct1">—</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="prog-life" style="background:var(--warn);width:0%"></div></div>
+    </div>
+
+    <div class="prog-row">
+      <div class="prog-top"><span>Waking hours lost to phone</span><span id="prog-pct2">—</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="prog-phone" style="background:#ffc14d;width:0%"></div></div>
+    </div>
+
+    <div class="tip" id="tip-text"></div>
+  </div>
+
+  <div class="footer">time is the only currency that can't be earned back</div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const fmt = n => Math.round(n).toLocaleString();
+
+  const TIPS = [
+    "Even 30 minutes less per day frees up 3 full weeks every year.",
+    "Every notification is a bid for your most limited resource.",
+    "At this rate, your phone will outlive your most productive years.",
+    "No one on their deathbed wished they'd scrolled more.",
+    "Your attention is worth more than any platform's ad revenue."
+  ];
+
+  function update() {
+    const age   = +$('sl-age').value;
+    const life  = +$('sl-life').value;
+    const phone = +$('sl-phone').value;
+    const sleep = +$('sl-sleep').value;
+
+    $('v-age').textContent   = age + ' yrs';
+    $('v-life').textContent  = life + ' yrs';
+    $('v-phone').textContent = phone + ' hrs';
+    $('v-sleep').textContent = sleep + ' hrs';
+
+    const yearsLeft    = Math.max(0, life - age);
+    const daysLeft     = Math.round(yearsLeft * 365.25);
+    const hoursLeft    = Math.round(daysLeft * 24);
+    const wakeHrs      = 24 - sleep;
+    const phoneYearHrs = Math.round(phone * 365.25);
+    const phoneLifeYrs = +(phone / 24 * yearsLeft).toFixed(1);
+    const pctSpent     = Math.round(age / life * 100);
+    const phoneWakePct = Math.min(100, Math.round(phone / wakeHrs * 100));
+
+    $('life-hours').innerHTML = fmt(hoursLeft) + '<span class="balance-unit">hrs</span>';
+    $('life-years').textContent = yearsLeft.toFixed(1);
+    $('days-left').textContent  = fmt(daysLeft);
+    $('pct-spent').textContent  = pctSpent + '%';
+    $('phone-cost').textContent = fmt(phoneYearHrs);
+
+    $('prog-life').style.width  = Math.min(100, pctSpent) + '%';
+    $('prog-phone').style.width = phoneWakePct + '%';
+    $('prog-pct1').textContent  = pctSpent + '%';
+    $('prog-pct2').textContent  = phoneWakePct + '%';
+
+    let warn;
+    if (phone >= 6)
+      warn = `${phone} hrs/day on your phone = ${phoneLifeYrs} years of your remaining life handed to apps.`;
+    else if (phone >= 3)
+      warn = `At ${phone} hrs/day, your phone will consume ${phoneLifeYrs} years of the time you have left.`;
+    else
+      warn = `Even ${phone} hrs/day costs ${phoneLifeYrs} years of your remaining life. Is it worth it?`;
+    $('warn-text').textContent = warn;
+
+    const tipIdx = Math.min(TIPS.length - 1, Math.floor(phone / 12 * TIPS.length));
+    $('tip-text').textContent = '"' + TIPS[tipIdx] + '"';
+  }
+
+  ['sl-age','sl-life','sl-phone','sl-sleep'].forEach(id =>
+    $(id).addEventListener('input', update)
+  );
+
+  const now = new Date();
+  $('today-date').textContent = now.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+  update();
+</script>
+</body>
+</html>
